@@ -2,8 +2,9 @@ import xlwings as xw
 from datetime import date
 import pandas as pd
 
-read_file = pd.read_csv (r'Path where the CSV file is stored\File name.csv')
-read_file.to_excel (r'Path to store the Excel file\File name.xlsx', index = None, header=True)
+xw.App(visible=False)
+read_file = pd.read_csv (r'D:\test\DF_Standard_Project_Export.csv')
+read_file.to_excel (r'D:\test\DF_Standard_Project_Export.xlsx', index = None, header=True)
 
 today = date.today()
 
@@ -42,19 +43,27 @@ def lastRow(idx, workbook, col=1):
 # and the dataforma export which is all jumbled together with the other columns we don't want for the current data analysis
 
 newWB = xw.Book()
-dfWB = xw.Book('DF_Standard_Project_Export.xlsx')
+dfWB = xw.Book(r'D:\test\DF_Standard_Project_Export.xlsx')
 
 
 newWB.sheets[0].name = 'Steep Slope'
 newWB.sheets.add(name='Low Slope')
+newWB.sheets.add(name='Shingles')
+newWB.sheets.add(name='Metal')
+newWB.sheets.add(name='TPO')
+newWB.sheets.add(name='Coatings')
 newWB.sheets.add(name='General')
 general = newWB.sheets['General']
 lowSlope = newWB.sheets['Low Slope']
 steepSlope = newWB.sheets['Steep Slope']
 
+print("Creating new workbook")
+
 
 # we copy the original data forma into an array we will use later
 generalArr = dfWB.sheets[0].range('A:BK').value
+
+print("Copying headers")
 
 # we find where the last row of data is in the general sheet
 totalDataRows = lastRow(0, dfWB)
@@ -64,32 +73,56 @@ totalDataRows = lastRow(0, dfWB)
 neededIndex = [0,1,2,9,10,49,57,33,3,4,5,6,7,18,19,36]
 
 # we need to create a new array that will hold the data we want to export
+
+print("grabbing data we want from dataforma")
 modifiedGeneral = []
 for i in range(0, totalDataRows):
     modifiedGeneral.append([])
     for j in range(0, len(neededIndex)):
         modifiedGeneral[i].append(generalArr[i][neededIndex[j]])
 
-# we bubble sort the array so that the data is in the correct order being from ascending production status
+
+print("sorting by ascending order of production status")
+# we bubble sort the array so that the data is in the correct order being from ascending production status date
 for i in range(1, len(modifiedGeneral)):
     for j in range(1, len(modifiedGeneral)):
-        if modifiedGeneral[i][5] < modifiedGeneral[j][5]:
+        if modifiedGeneral[i][6] < modifiedGeneral[j][6]:
             modifiedGeneral[i], modifiedGeneral[j] = modifiedGeneral[j], modifiedGeneral[i]
 
 
 # we declare new arrays that will hold the data for the other sheets
 steepSlopeArr= []
 lowSlopeArr = []
+shinglesArr = []
+metalArr = []
+tpoArr = []
+coatingsArr = []
 
+
+print("copying data into new workbook")
 # we find the data that will be needed for the steep slope array and the low slope array
 for i in range(0, len(modifiedGeneral)):
     if(i == 0):
         steepSlopeArr.append(modifiedGeneral[i])
         lowSlopeArr.append(modifiedGeneral[i])
+        shinglesArr.append(modifiedGeneral[i])
+        metalArr.append(modifiedGeneral[i])
+        tpoArr.append(modifiedGeneral[i])
+        coatingsArr.append(modifiedGeneral[i])
     elif(modifiedGeneral[i][3] == 'Steep Slope Roof Systems'):
         steepSlopeArr.append(modifiedGeneral[i])
     elif(modifiedGeneral[i][3] == 'Low Slope Roof Systems'):
         lowSlopeArr.append(modifiedGeneral[i])
+    if(modifiedGeneral[i][4] != None):
+        if(modifiedGeneral[i][4].find('Shingle') != -1):
+            shinglesArr.append(modifiedGeneral[i])
+        if(modifiedGeneral[i][4].find('Metal') != -1):
+            metalArr.append(modifiedGeneral[i])
+        if(modifiedGeneral[i][4].find('TPO') != -1):
+            tpoArr.append(modifiedGeneral[i])
+        if(modifiedGeneral[i][4].find('Coating') != -1):
+            coatingsArr.append(modifiedGeneral[i])
+
         
 
 #we move the array data into the sheets we created earlier
@@ -101,6 +134,24 @@ for i in range(0, len(lowSlopeArr)):
 
 for i in range(0, len(modifiedGeneral)):
     general.range('A' + str(i+1)).value = modifiedGeneral[i]
-    
+
+for i in range(0, len(shinglesArr)):
+    newWB.sheets['Shingles'].range('A' + str(i+1)).value = shinglesArr[i]
+
+for i in range(0, len(metalArr)):
+    newWB.sheets['Metal'].range('A' + str(i+1)).value = metalArr[i]
+
+for i in range(0, len(tpoArr)):
+    newWB.sheets['TPO'].range('A' + str(i+1)).value = tpoArr[i]
+
+for i in range(0, len(coatingsArr)):
+    newWB.sheets['Coatings'].range('A' + str(i+1)).value = coatingsArr[i]
+
+for i in newWB.sheets:
+    i.autofit(axis='columns')
+
+print("done")
 # we save the new workbook
 newWB.save(r'D:\test\%s.xlsx' % d)
+newWB.close()
+dfWB.close()
