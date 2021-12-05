@@ -34,9 +34,9 @@ class Ui_MainWindow(object):
         self.convertButton.setToolTip("")
         self.convertButton.setObjectName("convertButton")
 
-        self.convertButton_2 = QtWidgets.QPushButton(self.splitter)
-        self.convertButton_2.setToolTip("")
-        self.convertButton_2.setObjectName("convertButton_2")
+        self.settingsButton = QtWidgets.QPushButton(self.splitter)
+        self.settingsButton.setToolTip("")
+        self.settingsButton.setObjectName("settingsButton")
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -52,11 +52,11 @@ class Ui_MainWindow(object):
         self.selectButton.setText(_translate("MainWindow", "Select"))
         self.convertButton.setStatusTip(_translate("MainWindow", "Converts selected CSV file to formatted XLSX"))
         self.convertButton.setText(_translate("MainWindow", "Convert"))
-        self.convertButton_2.setStatusTip(_translate("MainWindow", "Access your format settings "))
-        self.convertButton_2.setText(_translate("MainWindow", "Settings"))
+        self.settingsButton.setStatusTip(_translate("MainWindow", "Access your format settings "))
+        self.settingsButton.setText(_translate("MainWindow", "Settings"))
     
 
-    
+
 
 
 if __name__ == "__main__":
