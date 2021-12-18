@@ -33,6 +33,12 @@ class settingsWindows(QListWidget):
         self.setWindowIcon(QtGui.QIcon('settings.png'))
         self.setIconSize(QtCore.QSize(50, 50))
         self.setStyleSheet("background-color: #f5f5f5;")
+    
+    def getSettings(self):
+        for i in range(len(indexes)):
+            item = QtWidgets.QListWidgetItem(indexes[i])
+            item.setFlags(QtCore.Qt.ItemIsEnabled)
+            self.addItem(item)
       
 
 class Ui_MainWindow(object):
@@ -67,9 +73,9 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.selectButton.triggered.connect(lambda: self.clicked("Select"))
-        self.convertButton.triggered.connect(lambda: self.clicked("Convert"))
-        self.settingsButton.triggered.connect(lambda: self.clicked("Settings"))
+        self.selectButton.clicked.connect(lambda: self.clicked("Select"))
+        self.convertButton.clicked.connect(lambda: self.clicked("Convert"))
+        self.settingsButton.clicked.connect(lambda: self.clicked("Settings"))
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -95,8 +101,8 @@ class Ui_MainWindow(object):
                 msg.setWindowTitle("No File Selected")
                 msg.exec_()
         if(text == "Settings"):
-            test = settingsWindows()
-            test.show()
+            settingsUI.getSettings()
+            settingsUI.show()
 
 
 
@@ -112,6 +118,7 @@ if __name__ == "__main__":
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
+    settingsUI = settingsWindows()
     MainWindow.show()
  
 
