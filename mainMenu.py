@@ -20,11 +20,7 @@ with open('config.json') as config:
 # we import the settings from the json file to see what indexes we need from the selected CSV files
 indexes = ["Project ID", "Number Alt", "Project Name", "Building Name", "Building Address", "Building City", "Building State", "Building Zip", "Assigned To", "Type", "Subtype", "Status", "Status Date", "Who Created", "Date Created", "Modified", "Who Modified", "Bid Amount",  "Original Contract Amount", "Revised Contract Amount", "Outstanding Contract Amount", "Gross Profit Margin %", "Notes", "Actual Project Cost", "Actual Project Cost Who", "Actual Project Cost Date", "Source", "Budget Amount", "Budget Notes", "Budget Dates", "Contract With Object", "Contract With Name", "Contract With Office Name", "Salesperson Name",
            "Contract Terms", "Contract Term Notes", "Division", "Reference", "Subsource", "Client PO Number", "Local Union", "Construction Capacity", "Exclusions", "Special Instructions", "Contract Date", "Hide Daily Work Crew", "Running Notes", "Reference Notes", "Serial Number", "Production Status", "Contract Status", "Contract Status Date Open", "Contract Status Date Completed", "Contract Status Date Closed", "Contract Status Who Open", "Contract Status Who Completed", "Contract Status Who Closed", "Production Status Date", "Status Who", "Production Status Who", "Contact Name", "Contact Phone Number", "Contact Email"]
-selectedIndexes = []
 
-for i in indexes:
-    if(settings['Convert Settings'][0][i]):
-        selectedIndexes.append(i)
 
 # this holds our selected csv file to be converted
 selectedFile = ""
