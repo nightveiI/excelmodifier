@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QFileDialog, QListWidget, QMainWindow , QMessageBox
+from PyQt5.QtWidgets import QApplication, QFileDialog, QListWidget, QMainWindow, QMessageBox
 import sys
 import json
 
@@ -17,16 +17,18 @@ import json
 with open('config.json') as config:
     settings = json.load(config)
 
-#we import the settings from the json file to see what indexes we need from the selected CSV files
-indexes = ["Project ID", "Number Alt", "Project Name", "Building Name", "Building Address", "Building City", "Building State", "Building Zip", "Assigned To", "Type", "Subtype", "Status", "Status Date", "Who Created", "Date Created", "Modified", "Who Modified", "Bid Amount",  "Original Contract Amount", "Revised Contract Amount", "Outstanding Contract Amount", "Gross Profit Margin %", "Notes", "Actual Project Cost", "Actual Project Cost Who", "Actual Project Cost Date", "Source", "Budget Amount", "Budget Notes", "Budget Dates", "Contract With Object", "Contract With Name", "Contract With Office Name", "Salesperson Name", "Contract Terms", "Contract Term Notes", "Division", "Reference", "Subsource", "Client PO Number", "Local Union", "Construction Capacity", "Exclusions", "Special Instructions", "Contract Date", "Hide Daily Work Crew", "Running Notes", "Reference Notes", "Serial Number", "Production Status", "Contract Status", "Contract Status Date Open", "Contract Status Date Completed", "Contract Status Date Closed", "Contract Status Who Open", "Contract Status Who Completed", "Contract Status Who Closed", "Production Status Date", "Status Who", "Production Status Who", "Contact Name", "Contact Phone Number", "Contact Email"]
+# we import the settings from the json file to see what indexes we need from the selected CSV files
+indexes = ["Project ID", "Number Alt", "Project Name", "Building Name", "Building Address", "Building City", "Building State", "Building Zip", "Assigned To", "Type", "Subtype", "Status", "Status Date", "Who Created", "Date Created", "Modified", "Who Modified", "Bid Amount",  "Original Contract Amount", "Revised Contract Amount", "Outstanding Contract Amount", "Gross Profit Margin %", "Notes", "Actual Project Cost", "Actual Project Cost Who", "Actual Project Cost Date", "Source", "Budget Amount", "Budget Notes", "Budget Dates", "Contract With Object", "Contract With Name", "Contract With Office Name", "Salesperson Name",
+           "Contract Terms", "Contract Term Notes", "Division", "Reference", "Subsource", "Client PO Number", "Local Union", "Construction Capacity", "Exclusions", "Special Instructions", "Contract Date", "Hide Daily Work Crew", "Running Notes", "Reference Notes", "Serial Number", "Production Status", "Contract Status", "Contract Status Date Open", "Contract Status Date Completed", "Contract Status Date Closed", "Contract Status Who Open", "Contract Status Who Completed", "Contract Status Who Closed", "Production Status Date", "Status Who", "Production Status Who", "Contact Name", "Contact Phone Number", "Contact Email"]
 selectedIndexes = []
+
 for i in indexes:
     if(settings['Convert Settings'][0][i]):
         selectedIndexes.append(i)
 
-
-#this holds our selected csv file to be converted 
+# this holds our selected csv file to be converted
 selectedFile = ""
+
 
 class Ui_settingsWindow(object):
     def setupUi(self, settingsWindow):
@@ -44,10 +46,11 @@ class Ui_settingsWindow(object):
 
         self.verticalLayout.setObjectName("verticalLayout")
 
-        self.label_2 = QtWidgets.QLabel(self.widget)
-        self.label_2.setObjectName("label_2")
+        self.sortingLabel = QtWidgets.QLabel(self.widget)
+        self.sortingLabel.setObjectName("sortingLabel")
+        self.sortingLabel.setText("Sort Items By")
 
-        self.verticalLayout.addWidget(self.label_2)
+        self.verticalLayout.addWidget(self.sortingLabel)
 
         self.sortBy = QtWidgets.QComboBox(self.widget)
         self.sortBy.setCurrentText("")
@@ -55,18 +58,20 @@ class Ui_settingsWindow(object):
 
         self.verticalLayout.addWidget(self.sortBy)
 
-        self.label = QtWidgets.QLabel(self.widget)
-        self.label.setObjectName("label")
-        
-        self.verticalLayout.addWidget(self.label)
+        self.orderLabel = QtWidgets.QLabel(self.widget)
+        self.orderLabel.setObjectName("orderLabel")
+        self.orderLabel.setText("Sort by Ascending or Descending Order")
+
+        self.verticalLayout.addWidget(self.orderLabel)
         self.ascendDescend = QtWidgets.QComboBox(self.widget)
         self.ascendDescend.setObjectName("ascendDescend")
         self.verticalLayout.addWidget(self.ascendDescend)
 
-        self.label_3 = QtWidgets.QLabel(self.widget)
-        self.label_3.setObjectName("label_3")
+        self.itemsLabel = QtWidgets.QLabel(self.widget)
+        self.itemsLabel.setObjectName("itemsLabel")
+        self.itemsLabel.setText("Select the items you would like to convert")
 
-        self.verticalLayout.addWidget(self.label_3)
+        self.verticalLayout.addWidget(self.itemsLabel)
         self.itemsShown = QtWidgets.QListWidget(self.widget)
         self.itemsShown.setObjectName("itemsShown")
         self.verticalLayout.addWidget(self.itemsShown)
@@ -81,17 +86,68 @@ class Ui_settingsWindow(object):
         self.statusbar.setObjectName("statusbar")
         settingsWindow.setStatusBar(self.statusbar)
 
+        settingsWindow.closeEvent = self.closeEvent
+        self.getSettings()
+
         self.retranslateUi(settingsWindow)
         QtCore.QMetaObject.connectSlotsByName(settingsWindow)
 
     def retranslateUi(self, settingsWindow):
         _translate = QtCore.QCoreApplication.translate
-        settingsWindow.setWindowTitle(_translate("settingsWindow", "MainWindow"))
+        settingsWindow.setWindowTitle(
+            _translate("settingsWindow", "MainWindow"))
+
+    def getSettings(self):
+        for i in range(len(indexes)):
+            if(settings['Convert Settings'][0][indexes[i]]):
+                item = QtWidgets.QListWidgetItem()
+                item.setText(indexes[i])
+                item.setCheckState(QtCore.Qt.Checked)
+                self.itemsShown.addItem(item)
+            else:
+                item = QtWidgets.QListWidgetItem()
+                item.setText(indexes[i])
+                item.setCheckState(QtCore.Qt.Unchecked)
+                self.itemsShown.addItem(item)
+            if(not settings['Sorting Settings'][0][indexes[i]]):
+                self.sortBy.addItem(indexes[i])
+            else:
+                self.sortBy.addItem(indexes[i])
+                self.sortBy.setCurrentIndex(i)
+        self.ascendDescend.addItem("Ascending")
+        self.ascendDescend.addItem("Descending")
+        if(settings['Order Settings'][0]["Ascending"]):
+            self.ascendDescend.setCurrentIndex(0)
+        else:
+            self.ascendDescend.setCurrentIndex(1)
+    
+    def saveSettings(self):
+        for i in range(self.itemsShown.count()):
+            if(self.itemsShown.item(i).checkState() == QtCore.Qt.Checked):
+                settings['Convert Settings'][0][indexes[i]] = True
+            else:
+                settings['Convert Settings'][0][indexes[i]] = False
+            if(indexes[i] == self.sortBy.currentText()):
+                settings['Sorting Settings'][0][indexes[i]] = True
+            else:
+                settings['Sorting Settings'][0][indexes[i]] = False
+
+        if(self.ascendDescend.currentIndex() == 0):
+            settings['Order Settings'][0]["Ascending"] = True
+            settings['Order Settings'][0]["Descending"] = False
+        else:
+            settings['Order Settings'][0]["Ascending"] = False
+            settings['Order Settings'][0]["Descending"] = True
+        with open('config.json', 'w') as outfile:
+            json.dump(settings, outfile, indent=2)
+    
+    def closeEvent(self, event):
+        self.saveSettings()
+        event.accept()
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.resize(280, 400)
-
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("MVR Dataforma Converter")
@@ -117,17 +173,16 @@ class Ui_MainWindow(object):
         self.settingsButton.setToolTip("")
         self.settingsButton.setObjectName("settingsButton")
         MainWindow.setCentralWidget(self.centralwidget)
-        
+
         self.listView = QtWidgets.QListView(self.centralwidget)
         self.listView.setGeometry(QtCore.QRect(10, 180, 256, 192))
 
         self.listView.setObjectName("listView")
-       
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -138,22 +193,27 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Dataforma Converter"))
-        self.selectButton.setStatusTip(_translate("MainWindow", "Browse and select desired CSV file"))
+        MainWindow.setWindowTitle(_translate(
+            "MainWindow", "Dataforma Converter"))
+        self.selectButton.setStatusTip(_translate(
+            "MainWindow", "Browse and select desired CSV file"))
         self.selectButton.setText(_translate("MainWindow", "Select"))
-        self.convertButton.setStatusTip(_translate("MainWindow", "Converts selected CSV file to formatted XLSX"))
+        self.convertButton.setStatusTip(_translate(
+            "MainWindow", "Converts selected CSV file to formatted XLSX"))
         self.convertButton.setText(_translate("MainWindow", "Convert"))
-        self.settingsButton.setStatusTip(_translate("MainWindow", "Access your format settings "))
+        self.settingsButton.setStatusTip(_translate(
+            "MainWindow", "Access your format settings "))
         self.settingsButton.setText(_translate("MainWindow", "Settings"))
 
     def clicked(self, text):
         if(text == "Select"):
             global selectedFile
-            selectedFile = QFileDialog.getOpenFileName(MainWindow, 'Open file', 'c:\\',"Comma Seperated Values (*.csv)")
+            selectedFile = QFileDialog.getOpenFileName(
+                MainWindow, 'Open file', 'c:\\', "Comma Seperated Values (*.csv)")
         if(text == "Convert"):
             if(selectedFile != ""):
                 print(selectedFile[0])
-                
+
             else:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)
@@ -162,8 +222,6 @@ class Ui_MainWindow(object):
                 msg.exec_()
         if(text == "Settings"):
             settingsWindow.show()
-
-                
 
 
 if __name__ == "__main__":
@@ -178,7 +236,7 @@ if __name__ == "__main__":
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
-    #we check if this is our first launch to set the default settings for the prespective user
+    # we check if this is our first launch to set the default settings for the prespective user
     if(settings['First Launch']):
         settingsWindow.show()
         settings['First Launch'] = False
