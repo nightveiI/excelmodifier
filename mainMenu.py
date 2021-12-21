@@ -46,31 +46,37 @@ class Ui_settingsWindow(object):
 
         self.verticalLayout.setObjectName("verticalLayout")
 
+        #this widget label indicates to the user what the following combo box is for
         self.sortingLabel = QtWidgets.QLabel(self.widget)
         self.sortingLabel.setObjectName("sortingLabel")
         self.sortingLabel.setText("Sort Items By")
 
         self.verticalLayout.addWidget(self.sortingLabel)
 
+        #this is the combo box that allows the user to select the item to sort by
         self.sortBy = QtWidgets.QComboBox(self.widget)
         self.sortBy.setCurrentText("")
         self.sortBy.setObjectName("sortBy")
-
         self.verticalLayout.addWidget(self.sortBy)
-
+        
+        #this widget label indicates to the user what the following combo box is for
         self.orderLabel = QtWidgets.QLabel(self.widget)
         self.orderLabel.setObjectName("orderLabel")
         self.orderLabel.setText("Sort by Ascending or Descending Order")
-
         self.verticalLayout.addWidget(self.orderLabel)
+        
+        #this is the combo box that allows the user to select the order to sort by
+        #ascending or descending being a-z or z-a
         self.ascendDescend = QtWidgets.QComboBox(self.widget)
         self.ascendDescend.setObjectName("ascendDescend")
         self.verticalLayout.addWidget(self.ascendDescend)
 
+        #this widget label indicates to the user what the following list widget is for
         self.itemsLabel = QtWidgets.QLabel(self.widget)
         self.itemsLabel.setObjectName("itemsLabel")
         self.itemsLabel.setText("Select the items you would like to convert")
 
+        #this is the list widget that allows the user to select the items to convert 
         self.verticalLayout.addWidget(self.itemsLabel)
         self.itemsShown = QtWidgets.QListWidget(self.widget)
         self.itemsShown.setObjectName("itemsShown")
@@ -86,7 +92,9 @@ class Ui_settingsWindow(object):
         self.statusbar.setObjectName("statusbar")
         settingsWindow.setStatusBar(self.statusbar)
 
+        #since our settingsWindow is an instance of the Ui_settingsWindow class, we set the closeEvent of the settingsWindow to the closeEvent function in the Ui_settingsWindow class
         settingsWindow.closeEvent = self.closeEvent
+        #this sets the currently saved settings in the config.json 
         self.getSettings()
 
         self.retranslateUi(settingsWindow)
@@ -97,52 +105,79 @@ class Ui_settingsWindow(object):
         settingsWindow.setWindowTitle(
             _translate("settingsWindow", "MainWindow"))
 
+    #this function is called to when the user first opens the interface or when they access the settings window
     def getSettings(self):
+        #this sets the currently saved settings in the config.json
+        #the following for loop sets the values of the combo boxes and list widget to the saved settings
         for i in range(len(indexes)):
+            #here we receive the settings we use to select what items we retrieve from the original dataforma datasheet and have it converted 
+            #into the export
+            #if the settings are true, we add the index to the list widget checked
             if(settings['Convert Settings'][0][indexes[i]]):
                 item = QtWidgets.QListWidgetItem()
                 item.setText(indexes[i])
                 item.setCheckState(QtCore.Qt.Checked)
                 self.itemsShown.addItem(item)
+            #if the settings are false, we add the index to the list widget unchecked
             else:
                 item = QtWidgets.QListWidgetItem()
                 item.setText(indexes[i])
                 item.setCheckState(QtCore.Qt.Unchecked)
                 self.itemsShown.addItem(item)
+            #this sets the first combo box to the saved settings
+            #if the found settings are false, we simply add them to the list in the combo box
             if(not settings['Sorting Settings'][0][indexes[i]]):
                 self.sortBy.addItem(indexes[i])
+            #however, if the settings found are true, we add them to the combo box and set the combo box index to this current index
+            #as the default value to sort by 
             else:
                 self.sortBy.addItem(indexes[i])
                 self.sortBy.setCurrentIndex(i)
+        #this sets the order combo box to ascending or descending
         self.ascendDescend.addItem("Ascending")
         self.ascendDescend.addItem("Descending")
+        #if the saved settings are true, we set the combo box index to 0 wher it is ascending
         if(settings['Order Settings'][0]["Ascending"]):
             self.ascendDescend.setCurrentIndex(0)
+        #if the saved settings are false, we set the combo box index to 1 where it is descending
         else:
             self.ascendDescend.setCurrentIndex(1)
     
+    #this function is called when the user clicks the close button on the settings window
     def saveSettings(self):
+        #we iterate throughout the entire listed indexes within the widget and combo boxes to save the settings
         for i in range(self.itemsShown.count()):
+            #if the item is checked, we set the settings to true
             if(self.itemsShown.item(i).checkState() == QtCore.Qt.Checked):
                 settings['Convert Settings'][0][indexes[i]] = True
+            #if the item is unchecked, we set the settings to false
             else:
                 settings['Convert Settings'][0][indexes[i]] = False
+            #we find if the current index is the same as the selected combo box index for sorting
+            #if it is, we set the settings to true to be the default index to sort by next time the user opens the settings window
             if(indexes[i] == self.sortBy.currentText()):
                 settings['Sorting Settings'][0][indexes[i]] = True
+            #if it is not, we set the settings to false to not be the default index to sort by next time the user opens the settings window
             else:
                 settings['Sorting Settings'][0][indexes[i]] = False
 
+        #if the user selects ascending, we set the settings to true and false to the other option 
         if(self.ascendDescend.currentIndex() == 0):
             settings['Order Settings'][0]["Ascending"] = True
             settings['Order Settings'][0]["Descending"] = False
+        #if the user selects descending, we set the settings to false and true to the other option
         else:
             settings['Order Settings'][0]["Ascending"] = False
             settings['Order Settings'][0]["Descending"] = True
+        #we save the settings to the config.json
         with open('config.json', 'w') as outfile:
             json.dump(settings, outfile, indent=2)
     
+    #this function is called when the user closes the settings window
     def closeEvent(self, event):
+        #we call the save settings function to save the settings
         self.saveSettings()
+        #we close the settings window
         event.accept()
 
 class Ui_MainWindow(object):
@@ -205,21 +240,30 @@ class Ui_MainWindow(object):
             "MainWindow", "Access your format settings "))
         self.settingsButton.setText(_translate("MainWindow", "Settings"))
 
+    #this function is called when the user clicks on any of the buttons
+    #depending on the text of the button, the function will do different things
     def clicked(self, text):
+        #if the user clicks on the select button, we call the select function
+        #where the user is prompted to select a csv file in their directories
         if(text == "Select"):
             global selectedFile
             selectedFile = QFileDialog.getOpenFileName(
                 MainWindow, 'Open file', 'c:\\', "Comma Seperated Values (*.csv)")
+        
+        #if the user clicks on the convert button, we call the convert function
         if(text == "Convert"):
-            if(selectedFile != ""):
+            #if the user has not selected a file, we prompt them to select a file
+            #otherwise we convert to the settings selected from the config json or their current modified settings
+            if(selectedFile[0] != "" and selectedFile != None):
                 print(selectedFile[0])
-
             else:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)
                 msg.setText("Please select a file to convert")
                 msg.setWindowTitle("No File Selected")
                 msg.exec_()
+        #if the user clicks on the settings button, we call the settings function
+        #where the user can modify their settings
         if(text == "Settings"):
             settingsWindow.show()
 
