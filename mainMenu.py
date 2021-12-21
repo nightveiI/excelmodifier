@@ -12,7 +12,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QFileDialog, QListWidget, QMainWindow, QMessageBox
 import sys
 import json
-
+import xlwings as xw
+from datetime import date
+import pandas as pd
 # we import our settings
 with open('config.json') as config:
     settings = json.load(config)
@@ -25,11 +27,59 @@ indexes = ["Project ID", "Number Alt", "Project Name", "Building Name", "Buildin
 # this holds our selected csv file to be converted
 selectedFile = ""
 
+def lastRow(idx, workbook, col=1):
+    """ Find the last row in the worksheet that contains data.
+
+    idx: Specifies the worksheet to select. Starts counting from zero.
+
+    workbook: Specifies the workbook
+
+    col: The column in which to look for the last cell containing data.
+    """
+
+    ws = workbook.sheets[idx]
+
+    lwr_r_cell = ws.cells.last_cell      # lower right cell
+    lwr_row = lwr_r_cell.row             # row of the lower right cell
+    lwr_cell = ws.range((lwr_row, col))  # change to your specified column
+
+    if lwr_cell.value is None:
+        lwr_cell = lwr_cell.end('up')    # go up untill you hit a non-empty cell
+
+    return lwr_cell.row
+
+# we declare what workbooks we are going to be using and what sheets we are going to be using
+# in this case, we need a clean new workbook and opening the export from dataforma 
+# the sheets we are going to be using are, from the new workbook: general, steep, and low slope
+# and the dataforma export which is all jumbled together with the other columns we don't want for the current data analysis
+
+
+def convert(file, selectedSettings):
+    xw.App(visible=False)
+    today = date.today()
+    # dd/mm/YY
+    # Month abbreviation, day and year
+    # we use this variable to name our file and save at the end
+    d = today.strftime("%b_%d_%Y")
+
+    # we open the workbook we are going to be using
+    newWB = xw.Book()
+    dfWB = xw.Book(file.replace(".csv", ".xlsx"))
+
+    # we open the sheets we are going to be using according to our sorting settings
+
+    sortingSettings = None
+
+    for i in range(len(indexes)):
+        if(indexes[i] == selectedSettings["Sorting Settings"][0][indexes[i]]):
+            sortingSettings = indexes[i]
+
+
 
 class Ui_settingsWindow(object):
     def setupUi(self, settingsWindow):
         settingsWindow.setObjectName("settingsWindow")
-        settingsWindow.resize(278, 368)
+        settingsWindow.resize(287, 385)
         self.centralwidget = QtWidgets.QWidget(settingsWindow)
         self.centralwidget.setObjectName("centralwidget")
 
@@ -46,7 +96,6 @@ class Ui_settingsWindow(object):
         self.sortingLabel = QtWidgets.QLabel(self.widget)
         self.sortingLabel.setObjectName("sortingLabel")
         self.sortingLabel.setText("Sort Items By")
-
         self.verticalLayout.addWidget(self.sortingLabel)
 
         #this is the combo box that allows the user to select the item to sort by
@@ -56,11 +105,22 @@ class Ui_settingsWindow(object):
         self.verticalLayout.addWidget(self.sortBy)
         
         #this widget label indicates to the user what the following combo box is for
+        self.divideLabel = QtWidgets.QLabel(self.widget)
+        self.divideLabel.setObjectName("divideLabel")
+        self.divideLabel.setText("Divide Sheets By")
+        self.verticalLayout.addWidget(self.divideLabel)
+
+        #this is the combo box that allows the user to select the item to divide by
+        self.divideBy = QtWidgets.QComboBox(self.widget)
+        self.divideBy.setObjectName("divideBy")
+        self.verticalLayout.addWidget(self.divideBy)
+
+        #this widget label indicates to the user what the following combo box is for
         self.orderLabel = QtWidgets.QLabel(self.widget)
         self.orderLabel.setObjectName("orderLabel")
         self.orderLabel.setText("Sort by Ascending or Descending Order")
         self.verticalLayout.addWidget(self.orderLabel)
-        
+
         #this is the combo box that allows the user to select the order to sort by
         #ascending or descending being a-z or z-a
         self.ascendDescend = QtWidgets.QComboBox(self.widget)
@@ -120,7 +180,7 @@ class Ui_settingsWindow(object):
                 item.setText(indexes[i])
                 item.setCheckState(QtCore.Qt.Unchecked)
                 self.itemsShown.addItem(item)
-            #this sets the first combo box to the saved settings
+            #this sets the sorting combo box to the saved settings
             #if the found settings are false, we simply add them to the list in the combo box
             if(not settings['Sorting Settings'][0][indexes[i]]):
                 self.sortBy.addItem(indexes[i])
@@ -129,6 +189,15 @@ class Ui_settingsWindow(object):
             else:
                 self.sortBy.addItem(indexes[i])
                 self.sortBy.setCurrentIndex(i)
+            #this sets the sorting combo box to the saved settings
+            #if the found settings are false, we simply add them to the list in the combo box
+            if(not settings['Divide Settings'][0][indexes[i]]):
+                self.divideBy.addItem(indexes[i])
+            #however, if the settings found are true, we add them to the dividing combo box and set the dividing combo box index to this current index
+            #as the default value to sort by 
+            else:
+                self.divideBy.addItem(indexes[i])
+                self.divideBy.setCurrentIndex(i)
         #this sets the order combo box to ascending or descending
         self.ascendDescend.addItem("Ascending")
         self.ascendDescend.addItem("Descending")
@@ -156,6 +225,13 @@ class Ui_settingsWindow(object):
             #if it is not, we set the settings to false to not be the default index to sort by next time the user opens the settings window
             else:
                 settings['Sorting Settings'][0][indexes[i]] = False
+            #we find if the current index is the same as the selected combo box index for dividing
+            #if it is, we set the settings to true to be the default index to divide by next time the user opens the settings window
+            if(indexes[i] == self.divideBy.currentText()):
+                settings['Divide Settings'][0][indexes[i]] = True
+            #if it is not, we set the settings to false to not be the default index to divide by next time the user opens the settings window
+            else:
+                settings['Divide Settings'][0][indexes[i]] = False
 
         #if the user selects ascending, we set the settings to true and false to the other option 
         if(self.ascendDescend.currentIndex() == 0):
@@ -205,10 +281,10 @@ class Ui_MainWindow(object):
         self.settingsButton.setObjectName("settingsButton")
         MainWindow.setCentralWidget(self.centralwidget)
 
-        self.listView = QtWidgets.QListView(self.centralwidget)
-        self.listView.setGeometry(QtCore.QRect(10, 180, 256, 192))
+        self.actionsDone = QtWidgets.QListWidget(self.centralwidget)
+        self.actionsDone.setGeometry(QtCore.QRect(10, 180, 256, 192))
 
-        self.listView.setObjectName("listView")
+        self.actionsDone.setObjectName("actionsDone")
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -245,13 +321,19 @@ class Ui_MainWindow(object):
             global selectedFile
             selectedFile = QFileDialog.getOpenFileName(
                 MainWindow, 'Open file', 'c:\\', "Comma Seperated Values (*.csv)")
+            #if the user selects a file, we add the file to the list of actions done
+            if(selectedFile[0] != ""):
+                self.actionsDone.addItem("Selected file: " + selectedFile[0])
+            else:
+                self.actionsDone.addItem("No file selected")
         
         #if the user clicks on the convert button, we call the convert function
         if(text == "Convert"):
             #if the user has not selected a file, we prompt them to select a file
             #otherwise we convert to the settings selected from the config json or their current modified settings
             if(selectedFile[0] != "" and selectedFile != None):
-                print(selectedFile[0])
+                #convert(selectedFile[0], settings)
+                self.actionsDone.addItem("Converting selected file")
             else:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)
@@ -262,6 +344,8 @@ class Ui_MainWindow(object):
         #where the user can modify their settings
         if(text == "Settings"):
             settingsWindow.show()
+            self.actionsDone.addItem("Settings Opened")
+
 
 
 if __name__ == "__main__":
