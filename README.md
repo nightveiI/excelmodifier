@@ -1,7 +1,5 @@
 # Dataforma_Converter
-```bash
-PIP Packages below
-```
+
 This project was meant to be used by McAllen Valley Roofing Co. to help data analytics.
 Using xlwings, I created the functions and classes that allows a really simple UI to be displayed and allow users
 to choose parameters for an exported Dataforma CSV to be transformed into something readable for 
