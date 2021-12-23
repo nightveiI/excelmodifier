@@ -1,17 +1,16 @@
-# excelmodifier
-short py program used to manipulate dataforma exports for McAllen Valley Roofing Co.
-
-confirm that you have compatible python & pip installed 
-
-(OPTIONAL) create virtual enviroment and activate
-
-run pip install xlwings / conda install xlwings
-
-have dataforma export in the same repository as the py file 
-
-dataforma export must be of McAllen Valley Roofing Co. 2021 standard
-
-run py file 
-
-new export will be created in the same repository under the name month_day_year
-
+# Dataforma_Converter
+PIP Packages below
+This project was meant to be used by McAllen Valley Roofing Co. to help data analytics.
+Using xlwings, I created the functions and classes that allows a really simple UI to be displayed and allow users
+to choose parameters for an exported Dataforma CSV to be transformed into something readable for 
+the Production Department, the Founders of the company, and any of the interested parties.
+## Authors
+- [@nightveiI](https://www.github.com/nightveiI) Jose Aguilar
+## Installation
+Install excelmodifier with pip
+```bash
+  pip install package_template
+```
+## Requirements
+* PyQt5 
+* xlwings 
