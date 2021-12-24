@@ -26,7 +26,9 @@ else:
     #
     # So, "platforms" is used here for demonstration purposes.
     include_files = get_qt_plugins_paths("PyQt5", "platforms")
-
+    include_files.append("config.json")
+    include_files.append("settings.png")
+    include_files.append("logo.png")
 # base="Win32GUI" should be used only for Windows GUI app
 base = None
 if sys.platform == "win32":
@@ -34,7 +36,7 @@ if sys.platform == "win32":
 
 build_exe_options = {
     "excludes": ["tkinter"],
-    "include_files": include_files,
+    "include_files": include_files, 
 }
 
 bdist_mac_options = {
@@ -45,11 +47,12 @@ bdist_dmg_options = {
     "volume_label": "TEST",
 }
 
-executables = [Executable("interface.py", base=base, target_name="Dataforma Modifier", icon="icon.ico")]
+executables = [Executable("interface.py", base=base, target_name="Dataforma Modifier", icon="icon.ico", shortcut_name="Dataforma Modifier", shortcut_dir="DesktopFolder")]
 
 setup(
     name="Dataforma Modifier",
     version="0.1",
+    author="nightveil",
     description="A Data Analysis Tool",
     options={
         "build_exe": build_exe_options,
