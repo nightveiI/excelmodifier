@@ -220,7 +220,7 @@ def convert(file, selectedSettings, listofActions):
                 #the reason we don't put it straight into the sheet is that if going straight into the sheet, there would be blank rows of data due to not every row being in every sheet,
                 #so rows are skipped using i in the range of the modified array
                 for x in range(len(dividingCategories)):
-                    if(modifiedArray[i][dividingIndex] == dividingCategories[x]):
+                    if(modifiedArray[i][dividingIndex].upper() == dividingCategories[x]):
                         finalArrays[dividingCategories[x]].append(modifiedArray[i])
     
     #we update the user of our status
