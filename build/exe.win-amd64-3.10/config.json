@@ -139,8 +139,8 @@
       "Building State": false,
       "Building Zip": false,
       "Assigned To": false,
-      "Type": false,
-      "Subtype": true,
+      "Type": true,
+      "Subtype": false,
       "Status": false,
       "Who Created": false,
       "Modified": false,
@@ -163,5 +163,5 @@
       "Descending": false
     }
   ],
-  "First Launch": true
+  "First Launch": false
 }
